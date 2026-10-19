@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hospital HMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <span class="brand-icon">🏥</span>
+                <h1>Hospital Management System</h1>
+                <p>Sign in to your account</p>
+            </div>
+            <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+                {% if error %}
+                <div class="alert alert-error">{{ error }}</div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="admin, dr_sarah_chen, patient_raj_mehta">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="admin123, doctor123, patient123">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </form>
+            <div class="auth-footer">
+                <a href="{{ url_for('register') }}">Create an account</a>
+                <div class="demo-credentials">
+                    <p><strong>Demo accounts:</strong></p>
+                    <p>Admin: <code>admin</code> / <code>admin123</code></p>
+                    <p>Doctor: <code>dr_sarah_chen</code> / <code>doctor123</code></p>
+                    <p>Patient: <code>patient_raj_mehta</code> / <code>patient123</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Flask backend with SQLite (stores data in a named volume)
+  flask-app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5050:5050"
+    volumes:
+      # Persist SQLite database across container restarts
+      - hospital-db:/app/instance
+    environment:
+      - PORT=5050
+      - FLASK_ENV=production
+    restart: unless-stopped
+
+volumes:
+  hospital-db:
+    driver: local
+

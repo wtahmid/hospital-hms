@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - Hospital HMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🏥</span>
+            <span class="brand-text">Hospital HMS</span>
+        </div>
+        <div class="nav-links">
+            <span class="nav-user">
+                <span class="user-role">{{ current_user.role|title }}</span>
+                <span class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>My Appointments</h1>
+            <p class="text-muted">{{ appointments|length }} appointments</p>
+            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline">Back</a>
+        </div>
+
+        <div class="card card-lg">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th><th>Time</th><th>Doctor</th><th>Notes</th><th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in appointments %}
+                            <tr>
+                                <td><strong>{{ apt.appointment_date }}</strong></td>
+                                <td>{{ apt.appointment_time }}</td>
+                                <td>Dr. #{{ apt.doctor_id }}</td>
+                                <td class="text-muted">{{ apt.notes }}</td>
+                                <td><span class="badge badge-{{ apt.status }}">{{ apt.status|title }}</span></td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center text-muted">No appointments booked</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

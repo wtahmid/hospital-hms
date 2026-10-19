@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients - Hospital HMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🏥</span>
+            <span class="brand-text">Hospital HMS</span>
+        </div>
+        <div class="nav-links">
+            <span class="nav-user">
+                <span class="user-role">{{ current_user.role|title }}</span>
+                <span class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Patients Directory</h1>
+            <p class="text-muted">{{ patients|length }} patients registered</p>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Date of Birth</th>
+                                <th>Gender</th>
+                                <th>Phone</th>
+                                <th>Blood Group</th>
+                                <th>Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for patient in patients %}
+                            <tr>
+                                <td><strong>{{ patient.first_name }} {{ patient.last_name }}</strong></td>
+                                <td>{{ patient.date_of_birth }}</td>
+                                <td>{{ patient.gender|title }}</td>
+                                <td>{{ patient.phone }}</td>
+                                <td><span class="badge badge-info">{{ patient.blood_group }}</span></td>
+                                <td>{{ patient.address }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="6" class="text-center text-muted">No patients found</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

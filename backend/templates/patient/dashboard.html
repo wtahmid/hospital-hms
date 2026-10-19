@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - Hospital HMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🏥</span>
+            <span class="brand-text">Hospital HMS</span>
+        </div>
+        <div class="nav-links">
+            <span class="nav-user">
+                <span class="user-role">{{ current_user.role|title }}</span>
+                <span class="user-name">{{ patient.first_name }} {{ patient.last_name }}</span>
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Patient Dashboard</h1>
+            <p class="text-muted">Welcome, {{ patient.first_name }} {{ patient.last_name }}</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-blue">
+                <div class="stat-info">
+                    <span class="stat-value">{{ appointments|length }}</span>
+                    <span class="stat-label">Appointments</span>
+                </div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-info">
+                    <span class="stat-value">{{ prescriptions|length }}</span>
+                    <span class="stat-label">Prescriptions</span>
+                </div>
+            </div>
+            <div class="stat-card stat-red">
+                <div class="stat-info">
+                    <span class="stat-value">{{ bills|length }}</span>
+                    <span class="stat-label">Bills</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Book an Appointment</h2>
+                </div>
+                <div class="card-body">
+                    <form id="bookAppointmentForm" onsubmit="bookAppointment(event)">
+                        <div class="form-group">
+                            <label>Select Doctor</label>
+                            <select id="doctorSelect" class="form-control" required>
+                                <option value="">-- Choose a doctor --</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}">
+                                    Dr. {{ doctor.first_name }} {{ doctor.last_name }} 
+                                    - {{ doctor.specialization }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="text" id="appointmentDate" class="form-control" 
+                                       placeholder="Select date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Time</label>
+                                <select id="appointmentTime" class="form-control" required>
+                                    <option value="">-- Choose time --</option>
+                                    <option value="09:00 AM">09:00 AM</option>
+                                    <option value="09:30 AM">09:30 AM</option>
+                                    <option value="10:00 AM">10:00 AM</option>
+                                    <option value="10:30 AM">10:30 AM</option>
+                                    <option value="11:00 AM">11:00 AM</option>
+                                    <option value="11:30 AM">11:30 AM</option>
+                                    <option value="02:00 PM">02:00 PM</option>
+                                    <option value="02:30 PM">02:30 PM</option>
+                                    <option value="03:00 PM">03:00 PM</option>
+                                    <option value="03:30 PM">03:30 PM</option>
+                                    <option value="04:00 PM">04:00 PM</option>
+                                    <option value="04:30 PM">04:30 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes (optional)</label>
+                            <textarea id="appointmentNotes" class="form-control" rows="2" 
+                                      placeholder="Reason for visit"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Book Appointment</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card card-lg">
+                <div class="card-header">
+                    <h2>My Appointments</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Doctor</th>
+                                    <th>Notes</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in appointments %}
+                                <tr>
+                                    <td><strong>{{ apt.appointment_date }}</strong></td>
+                                    <td>{{ apt.appointment_time }}</td>
+                                    <td>Dr. #{{ apt.doctor_id }}</td>
+                                    <td class="text-muted">{{ apt.notes }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ apt.status }}">{{ apt.status|title }}</span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="5" class="text-center text-muted">No appointments booked</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if prescriptions %}
+        <div class="card">
+            <div class="card-header">
+                <h2>My Prescriptions</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Doctor</th>
+                                <th>Diagnosis</th>
+                                <th>Medication</th>
+                                <th>Dosage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rx in prescriptions %}
+                            <tr>
+                                <td>{{ rx.created_at.strftime('%Y-%m-%d %H:%M') if rx.created_at else 'N/A' }}</td>
+                                <td>Dr. #{{ rx.doctor_id }}</td>
+                                <td class="text-muted">{{ rx.diagnosis }}</td>
+                                <td>{{ rx.medication }}</td>
+                                <td>{{ rx.dosage }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center text-muted">No prescriptions</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if bills %}
+        <div class="card">
+            <div class="card-header">
+                <h2>My Bills</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in bills %}
+                            <tr>
+                                <td>{{ bill.created_at.strftime('%Y-%m-%d') if bill.created_at else 'N/A' }}</td>
+                                <td class="text-muted">{{ bill.description }}</td>
+                                <td><strong>${{ "%.2f"|format(bill.amount) }}</strong></td>
+                                <td>
+                                    <span class="badge badge-{{ bill.status }}">{{ bill.status|title }}</span>
+                                </td>
+                                <td>
+                                    {% if bill.status == 'pending' %}
+                                    <button class="btn btn-sm btn-primary" 
+                                            onclick="payBill({{ bill.id }})">
+                                        💳 Pay Now
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center text-muted">No bills</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </main>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast" style="display:none"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+    // Date picker
+    flatpickr("#appointmentDate", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: true
+    });
+
+    function bookAppointment(e) {
+        e.preventDefault();
+        const data = {
+            doctor_id: document.getElementById('doctorSelect').value,
+            date: document.getElementById('appointmentDate').value,
+            time: document.getElementById('appointmentTime').value,
+            notes: document.getElementById('appointmentNotes').value
+        };
+        fetch('/patient/book-appointment', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(r => r.json()).then(result => {
+            if (result.success) {
+                showToast('Appointment booked successfully!', 'success');
+                document.getElementById('bookAppointmentForm').reset();
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('Error: ' + result.error, 'error');
+            }
+        });
+    }
+
+    function payBill(billId) {
+        fetch('/patient/bill/' + billId + '/pay', {
+            method: 'POST'
+        }).then(r => r.json()).then(result => {
+            if (result.success) {
+                showToast('Payment successful!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('Error: ' + result.error, 'error');
+            }
+        });
+    }
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast toast-' + type;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Hospital HMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🏥</span>
+            <span class="brand-text">Hospital HMS</span>
+        </div>
+        <div class="nav-links">
+            <span class="nav-user">
+                <span class="user-role">{{ current_user.role|title }}</span>
+                <span class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Doctor Dashboard</h1>
+            <p class="text-muted">Welcome, Dr. {{ doctor.first_name }} {{ doctor.last_name }}</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-blue">
+                <div class="stat-info">
+                    <span class="stat-value">{{ appointments|length }}</span>
+                    <span class="stat-label">My Appointments</span>
+                </div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-info">
+                    <span class="stat-value">{{ prescriptions|length }}</span>
+                    <span class="stat-label">Prescriptions</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card card-lg">
+                <div class="card-header">
+                    <h2>My Appointments</h2>
+                    <a href="{{ url_for('doctor_appointments') }}" class="btn btn-sm btn-outline">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Notes</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in appointments %}
+                                <tr>
+                                    <td><strong>{{ apt.appointment_date }}</strong></td>
+                                    <td>{{ apt.appointment_time }}</td>
+                                    <td>Patient #{{ apt.patient_id }}</td>
+                                    <td class="text-muted">{{ apt.notes }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ apt.status }}">{{ apt.status|title }}</span>
+                                    </td>
+                                    <td>
+                                        {% if apt.status == 'scheduled' or apt.status == 'confirmed' %}
+                                        <button class="btn btn-sm btn-success" 
+                                                onclick="createPrescription({{ apt.id }}, {{ apt.patient_id }})">
+                                            ✅ Complete
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="6" class="text-center text-muted">No appointments</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>My Prescriptions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Patient</th>
+                                    <th>Diagnosis</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rx in prescriptions %}
+                                <tr>
+                                    <td>{{ rx.created_at.strftime('%Y-%m-%d %H:%M') if rx.created_at else 'N/A' }}</td>
+                                    <td>Patient #{{ rx.patient_id }}</td>
+                                    <td class="text-muted">{{ rx.diagnosis[:50] }}...</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="3" class="text-center text-muted">No prescriptions yet</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prescription Modal -->
+        <div id="prescriptionModal" class="modal" style="display:none">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create Prescription</h2>
+                    <span class="close-modal" onclick="closeModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="prescriptionForm" onsubmit="submitPrescription(event)">
+                        <input type="hidden" id="prescriptionAppointmentId">
+                        <input type="hidden" id="prescriptionPatientId">
+                        <div class="form-group">
+                            <label>Diagnosis</label>
+                            <textarea id="prescriptionDiagnosis" class="form-control" rows="2" required 
+                                      placeholder="Brief diagnosis"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Medication</label>
+                            <textarea id="prescriptionMedication" class="form-control" rows="2" required 
+                                      placeholder="Medicine names"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Dosage</label>
+                            <input type="text" id="prescriptionDosage" class="form-control" required 
+                                   placeholder="e.g., 500mg twice daily for 7 days">
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea id="prescriptionNotes" class="form-control" rows="2" 
+                                      placeholder="Additional notes"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Create Prescription</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    function createPrescription(appointmentId, patientId) {
+        document.getElementById('prescriptionAppointmentId').value = appointmentId;
+        document.getElementById('prescriptionPatientId').value = patientId;
+        document.getElementById('prescriptionModal').style.display = 'block';
+    }
+    function closeModal() {
+        document.getElementById('prescriptionModal').style.display = 'none';
+    }
+    function submitPrescription(e) {
+        e.preventDefault();
+        const data = {
+            diagnosis: document.getElementById('prescriptionDiagnosis').value,
+            medication: document.getElementById('prescriptionMedication').value,
+            dosage: document.getElementById('prescriptionDosage').value,
+            notes: document.getElementById('prescriptionNotes').value
+        };
+        fetch('/doctor/create-prescription/' + document.getElementById('prescriptionAppointmentId').value, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(r => r.json()).then(result => {
+            if (result.success) {
+                alert('Prescription created successfully!');
+                closeModal();
+                location.reload();
+            } else {
+                alert('Error: ' + result.error);
+            }
+        });
+    }
+    document.querySelectorAll('.close-modal, .modal').forEach(el => {
+        // close on backdrop click
+    });
+    document.getElementById('prescriptionModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    </script>
+</body>
+</html>

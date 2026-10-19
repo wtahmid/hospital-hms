@@ -1,0 +1,55 @@
+# Docker build ignore file
+# Files excluded from the Docker build context
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+# Virtual environments
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Data Model
+data_model/models/
+data_model/data/
+
+# Git
+.git/
+.gitignore

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hospital HMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🏥</span>
+            <span class="brand-text">Hospital HMS</span>
+        </div>
+        <div class="nav-links">
+            <span class="nav-user">
+                <span class="user-role">{{ current_user.role|title }}</span>
+                <span class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Admin Dashboard</h1>
+            <p class="text-muted">Hospital overview and management</p>
+            <a href="{{ url_for('admin_add_patient') }}" class="btn btn-primary">+ Add Patient</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-blue">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ total_patients }}</span>
+                    <span class="stat-label">Total Patients</span>
+                </div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-icon">👨‍⚕️</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ total_doctors }}</span>
+                    <span class="stat-label">Total Doctors</span>
+                </div>
+            </div>
+            <div class="stat-card stat-purple">
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ total_appointments }}</span>
+                    <span class="stat-label">Appointments</span>
+                </div>
+            </div>
+            <div class="stat-card stat-orange">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ pending_appointments }}</span>
+                    <span class="stat-label">Pending Appts</span>
+                </div>
+            </div>
+            <div class="stat-card stat-red">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ total_bills }}</span>
+                    <span class="stat-label">Total Bills</span>
+                </div>
+            </div>
+            <div class="stat-card stat-yellow">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ pending_bills }}</span>
+                    <span class="stat-label">Pending Bills</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card card-lg">
+                <div class="card-header">
+                    <h2>Recent Appointments</h2>
+                    <a href="{{ url_for('admin_appointments') }}" class="btn btn-sm btn-outline">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in recent_appointments %}
+                                <tr>
+                                    <td>{{ apt.patient_id }}</td>
+                                    <td>Dr. {{ apt.doctor_id }}</td>
+                                    <td>{{ apt.appointment_date }}</td>
+                                    <td>{{ apt.appointment_time }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ apt.status }}">{{ apt.status|title }}</span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="5" class="text-center text-muted">No appointments yet</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Doctors</h2>
+                    <a href="{{ url_for('admin_doctors') }}" class="btn btn-sm btn-outline">Manage</a>
+                </div>
+                <div class="card-body">
+                    <div class="doctor-list">
+                        {% for doctor in doctors %}
+                        <div class="doctor-item">
+                            <div class="doctor-avatar">👨‍⚕️</div>
+                            <div class="doctor-info">
+                                <strong>Dr. {{ doctor.first_name }} {{ doctor.last_name }}</strong>
+                                <span class="text-muted">{{ doctor.specialization }}</span>
+                            </div>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No doctors registered</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Patients</h2>
+                    <a href="{{ url_for('admin_patients') }}" class="btn btn-sm btn-outline">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Blood</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in patients %}
+                                <tr>
+                                    <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                                    <td>{{ patient.phone }}</td>
+                                    <td><span class="badge badge-info">{{ patient.blood_group }}</span></td>
+                                    <td>{{ patient.created_at.strftime('%Y-%m-%d') if patient.created_at else 'N/A' }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-center text-muted">No patients yet</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
