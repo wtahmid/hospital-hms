@@ -6,6 +6,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
+    "allowJs": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
@@ -13,7 +14,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideContract": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
